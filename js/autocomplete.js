@@ -13,7 +13,6 @@ class AutoComplete {
 	constructor(el, options) {
 		this.opt = {};
 		this.options = options;
-		console.log(this.opt);
 		this.dat = [];
 		this.data = this.opt["data"];
 		this.el = el;
@@ -40,7 +39,7 @@ class AutoComplete {
 	onInput(e) {
 		this.val = this.inp.value.toLowerCase();
 		this.close();
-		if(this.val.length < this.opt["minChars"] || (this.opt["open"] === false && this.cpl.childElementCount)) return;
+		if(this.opt["open"] === false && (this.val.length < this.opt["minChars"] || this.cpl.childElementCount)) return;
 		this.filter().map(this.addResult, this);
 	}
 	
@@ -178,7 +177,6 @@ class AutoComplete {
 	* @export
 	*/
 	set options(value) {
-		this.opt = Object.assign.apply(this, [{"placeHolder": "", "open": false, "highlight": true, "maxHeight": 500, "minChars": 3, "labelField": "", "searchField": "", "dataField": "", "data": [], "onSelect": function() {}}, value]);
-		//console.log(this.opt);
+		Object.assign(this.opt, {"placeHolder": "", "open": false, "highlight": true, "maxHeight": 500, "minChars": 3, "labelField": "", "searchField": "", "dataField": "", "data": [], "onSelect": function() {}}, value);
 	}
 }
