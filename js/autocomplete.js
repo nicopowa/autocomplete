@@ -47,7 +47,7 @@ class AutoComplete {
 		let b = document.createElement("div");
 		if(this.opt["highlight"]) {
 			let found = result[this.opt["labelField"]].toLowerCase().indexOf(this.val);
-			b.innerHTML = result[this.opt["labelField"]].slice(0, found) + "<font color=\"#FF9400\">" + result[this.opt["labelField"]].slice(found, found + this.val.length) + "</font>" + result[this.opt["labelField"]].slice(found + this.val.length, result[this.opt["labelField"]].length);
+			b.innerHTML = result[this.opt["labelField"]].slice(0, found) + "<strong><font color=\"#FF9400\">" + result[this.opt["labelField"]].slice(found, found + this.val.length) + "</font></strong>" + result[this.opt["labelField"]].slice(found + this.val.length, result[this.opt["labelField"]].length);
 		}
 		else b.innerHTML = result[this.opt["labelField"]];
 		b.setAttribute("data-value", this.dat.findIndex(value => value[this.opt["labelField"]] == result[this.opt["labelField"]]));
