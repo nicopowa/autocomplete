@@ -4,11 +4,13 @@ function main(event) {
 
 	var fruitsAC = document.createElement("div");
 	fruitsAC.style.width = "500px";
+	fruitsAC.style.maxWidth = "100%";
 	fruitsAC.style.height = "39px";
 	document.body.appendChild(fruitsAC);
 
 	var countriesAC = document.createElement("div");
 	countriesAC.style.width = "500px";
+	countriesAC.style.maxWidth = "100%";
 	countriesAC.style.height = "39px";
 	document.body.appendChild(countriesAC);
 
@@ -35,7 +37,7 @@ function main(event) {
 		dataField: "_id",
 		minChars: 1,
 		onSelect: function(value) {
-			console.log("select", value);
+			console.log("select:", value);
 			console.log("fruit:", fruits.value);
 		}
 	});
@@ -49,7 +51,7 @@ function main(event) {
 		dataField: "",
 		minChars: 3,
 		onSelect: function(value) {
-			console.log("select", value);
+			console.log("select:", value);
 			console.log("country:", countries.value);
 		}
 	});

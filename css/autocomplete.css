@@ -33,3 +33,7 @@
 	background-color: DodgerBlue !important;
 	color: #ffffff;
 }
+
+input[type=search] {
+    -webkit-appearance: none;
+}

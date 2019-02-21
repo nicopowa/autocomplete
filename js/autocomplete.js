@@ -24,6 +24,7 @@ class AutoComplete {
 		
 		this.inp = document.createElement("input");
 		this.inp.setAttribute("class", "ac-input");
+		this.inp.setAttribute("type", "search");
 		this.inp.setAttribute("placeHolder", this.opt["placeHolder"]);
 		this.el.appendChild(this.inp);
 		
@@ -45,10 +46,7 @@ class AutoComplete {
 	
 	addResult(result) {
 		let b = document.createElement("div");
-		if(this.opt["highlight"]) {
-			let found = result[this.opt["labelField"]].toLowerCase().indexOf(this.val);
-			b.innerHTML = result[this.opt["labelField"]].slice(0, found) + "<strong><font color=\"#FF9400\">" + result[this.opt["labelField"]].slice(found, found + this.val.length) + "</font></strong>" + result[this.opt["labelField"]].slice(found + this.val.length, result[this.opt["labelField"]].length);
-		}
+		if(this.opt["highlight"]) b.innerHTML = this.highlight(result[this.opt["labelField"]]);
 		else b.innerHTML = result[this.opt["labelField"]];
 		b.setAttribute("data-value", this.dat.findIndex(value => value[this.opt["labelField"]] == result[this.opt["labelField"]]));
 		b.addEventListener("click", this.select.bind(this));
@@ -57,6 +55,11 @@ class AutoComplete {
 	
 	filter() {
 		return this.dat.filter(value => value[this.opt["searchField"]].toLowerCase().indexOf(this.val) != -1);
+	}
+	
+	highlight(label) {
+		let found = label.toLowerCase().indexOf(this.val);
+		return label.slice(0, found) + "<font color=\"#FF9400\">" + label.slice(found, found + this.val.length) + "</font>" + label.slice(found + this.val.length, label.length);
 	}
 	
 	select(e) {
