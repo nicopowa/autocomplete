@@ -36,8 +36,8 @@ function main(event) {
 		searchField: "name",
 		dataField: "_id",
 		minChars: 1,
-		onSelect: function(value) {
-			console.log("select:", value);
+		onSelect: function(value, data) {
+			console.log("select:", value, data);
 			console.log("fruit:", fruits.value);
 		}
 	});
@@ -50,8 +50,8 @@ function main(event) {
 		labelField: "",
 		dataField: "",
 		minChars: 3,
-		onSelect: function(value) {
-			console.log("select:", value);
+		onSelect: function(value, data) {
+			console.log("select:", value, data);
 			console.log("country:", countries.value);
 		}
 	});

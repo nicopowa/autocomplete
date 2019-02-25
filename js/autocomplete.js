@@ -63,10 +63,11 @@ class AutoComplete {
 	}
 	
 	select(e) {
-		let selected = this.dat[e.target.getAttribute("data-value")];
+		let index = e.target.getAttribute("data-value");
+		let selected = this.dat[index];
 		this.inp.value = selected[this.opt["labelField"]];
 		this.val = this.inp.value.toLowerCase();
-		this.opt["onSelect"](selected[this.opt["dataField"]]);
+		this.opt["onSelect"](selected[this.opt["dataField"]], selected, index);
 		this.down = false;
 		this.close();
 	}
