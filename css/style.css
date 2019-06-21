@@ -31,3 +31,9 @@ body {
 	
 	font-family: helvetica;
 }
+
+.autocomplete {
+	width: 500px;
+	max-width: 100%;
+	margin: 5px;
+}

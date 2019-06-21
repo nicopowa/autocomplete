@@ -11,176 +11,169 @@
 class AutoComplete {
 	
 	constructor(el, options) {
-		this.opt = {};
-		this.options = options;
-		this.dat = [];
-		this.data = this.opt["data"];
-		this.el = el;
-		this.val = "";
-		this.ct = -1;
-		this.down = false;
+		this._options = {};
+		this.setOptions(options);
+		this._data = [];
+		this.data = this._options["data"];
+		this._element = el;
+		this._value = "";
+		this._current = -1;
+		this._down = false;
 		
-		this.empty(this.el);
+		this._element.classList.add("ac");
 		
-		this.inp = document.createElement("input");
-		this.inp.setAttribute("class", "ac-input");
-		this.inp.setAttribute("type", "search");
-		this.inp.setAttribute("placeHolder", this.opt["placeHolder"]);
-		this.el.appendChild(this.inp);
+		this._input = document.createElement("input");
+		this._input.setAttribute("type", "search");
+		this._input.setAttribute("placeHolder", this._options["prompt"]);
+		this._element.appendChild(this._input);
 		
-		[["input", this.onInput], ["click", this.onClick], ["keydown", this.onKeyDown], ["blur", this.onBlur]].map(value => this.inp.addEventListener(value[0], value[1].bind(this)));
+		this._cpl = document.createElement("div");
+		this._cpl.style.maxHeight = this._options["maxHeight"];
+		this._cpl.classList.add("ac-items");
+		this._element.appendChild(this._cpl);
 		
-		this.cpl = document.createElement("div");
-		this.cpl.style.maxHeight = this.opt["maxHeight"] + "px";
-		this.cpl.setAttribute("class", "ac-items");
-		this.el.appendChild(this.cpl);
-		this.cpl.addEventListener("mousedown", this.onMouseDown.bind(this));
+		let events = {"input": this.onInput, "click": this.onClick, "keydown": this.onKeyDown, "blur": this.onBlur};
+		for(let event in events) this._input.addEventListener(event, events[event].bind(this));
+	
+		this._cpl.addEventListener("mousedown", this.onMouseDown.bind(this));
 	}
 	
 	onInput(e) {
-		this.val = this.inp.value.toLowerCase();
-		this.close();
-		if(this.opt["open"] === false && (this.val.length < this.opt["minChars"] || this.cpl.childElementCount)) return;
-		this.filter().map(this.addResult, this);
+		this._value = this._input.value.toLowerCase();
+		this.closeResults();
+		if(!this._options["open"] && (this._value.length < this._options["minChars"] || this._cpl.childElementCount)) return;
+		this.openResults(this.filter());
+		this._options["onInput"](this._value);
 	}
 	
 	addResult(result) {
 		let b = document.createElement("div");
-		if(this.opt["highlight"]) b.innerHTML = this.highlight(result[this.opt["labelField"]]);
-		else b.innerHTML = result[this.opt["labelField"]];
-		b.setAttribute("data-value", this.dat.findIndex(value => value[this.opt["labelField"]] == result[this.opt["labelField"]]));
+		if(this._options["highlight"]) b.innerHTML = this.highlight(result[this._options["label"]]);
+		else b.innerHTML = result[this._options["label"]];
+		b.setAttribute("data-value", this._data.findIndex(value => value[this._options["label"]] == result[this._options["label"]]));
 		b.addEventListener("click", this.select.bind(this));
-		this.cpl.appendChild(b);
+		this._cpl.appendChild(b);
 	}
 	
 	filter() {
-		return this.dat.filter(value => value[this.opt["searchField"]].toLowerCase().indexOf(this.val) != -1);
+		return this._data.filter(value => value[this._options["search"]].toLowerCase().indexOf(this._value) != -1);
 	}
 	
 	highlight(label) {
-		let found = label.toLowerCase().indexOf(this.val);
-		return label.slice(0, found) + "<font color=\"#FF9400\">" + label.slice(found, found + this.val.length) + "</font>" + label.slice(found + this.val.length, label.length);
+		let found = label.toLowerCase().indexOf(this._value);
+		let high = document.createElement("span");
+		high.innerHTML = label.slice(found, found + this._value.length);
+		return label.slice(0, found) + high.outerHTML + label.slice(found + this._value.length, label.length);
 	}
 	
 	select(e) {
 		let index = e.target.getAttribute("data-value");
-		let selected = this.dat[index];
-		this.inp.value = selected[this.opt["labelField"]];
-		this.val = this.inp.value.toLowerCase();
-		this.opt["onSelect"](selected[this.opt["dataField"]], selected, index);
-		this.down = false;
-		this.close();
+		let selected = this._data[index];
+		this._input.value = selected[this._options["label"]];
+		this._value = this._input.value.toLowerCase();
+		this._down = false;
+		this.closeResults();
+		this._options["onSelect"](selected[this._options["field"]], selected, index);
 	}
 	
 	onClick(e) {
-		this.close();
-		if(this.opt["open"] === true && this.val == "") this.dat.map(this.addResult, this);
+		if(this._cpl.childElementCount) return this.closeResults();
+		if(this._options["open"] && !this._value) this.openResults(this._data);
 		else this.onInput(null);
 	}
 	
 	onKeyDown(e) {
-		let x = this.cpl.childNodes;
+		let x = this._cpl.childNodes;
 		if([40, 38, 13, 27].indexOf(e.keyCode) != -1) e.preventDefault();
-		if(e.keyCode == 40) { // down
-			if(this.ct == -1) this.onInput(null);
-			this.ct++;
-			this.active(x);
+		switch(e.keyCode) {
+			case 40: // down
+				if(this._current == -1) this.onInput(null);
+				this._current++;
+				this.activeResult(x);
+				break;
+				
+			case 38: // up
+				this._current--;
+				this.activeResult(x);
+				break;
+				
+			case 13: // enter
+				if(this._current != -1) x[this._current].click();
+				else {
+					if(this._options["custom"]) {
+						if(this._input.value.length >= this._options["minChars"]) this._options["onSelect"](this._input.value, undefined, -1);
+					}
+					else if(this._cpl.childElementCount == 1) x[0].click();
+					this.closeResults();
+				}
+				break;
+				
+			case 27: // esc
+				this.closeResults();
+				break;
 		}
-		else if(e.keyCode == 38) { // up
-			this.ct--;
-			this.active(x);
-		}
-		else if(e.keyCode == 13) { // enter
-			if(this.ct != -1) x[this.ct].click();
-			else this.close();
-		}
-		else if(e.keyCode == 27) this.close(); // esc
 	}
 	
 	onBlur(e) {
-		if(this.down) return;
-		this.close();
+		if(this._down) return;
+		this.closeResults();
 	}
 	
-	onMouseDown(event) {
-		this.down = true;
+	onMouseDown(e) {
+		this._down = true;
 	}
 	
-	active(x) {
+	activeResult(x) {
 		if(!x.length) return;
-		this.inactive(x);
-		this.ct = this.ct < 0 ? x.length - 1 : (this.ct > x.length - 1 ? 0 : this.ct);
-		x[this.ct].classList.add("ac-active");
-		x[this.ct].scrollIntoView();
+		this.inactiveResult(x);
+		this._current = this._current < 0 ? x.length - 1 : (this._current > x.length - 1 ? 0 : this._current);
+		x[this._current].classList.add("ac-active");
+		x[this._current].scrollIntoView();
 	}
 	
-	inactive(x) {
+	inactiveResult(x) {
 		for(let i = 0, l = x.length; i < l; i++) x[i].classList.remove("ac-active");
 	}
 	
-	close() {
-		this.ct = -1;
-		this.empty(this.cpl);
+	openResults(dat) {
+		dat.map(this.addResult, this);
 	}
 	
-	empty(el) {
-		while(el.firstChild) el.removeChild(el.firstChild);
+	closeResults() {
+		this._current = -1;
+		while(this._cpl.firstChild) this._cpl.removeChild(this._cpl.firstChild);
 	}
 	
 	/**
 	* @export
 	*/
 	set value(value) {
-		this.inp.value = value;
-		this.val = value.toLowerCase();
+		this._input.value = value;
+		this._value = value.toLowerCase();
 	}
 	
 	/**
 	* @export
 	*/
 	get value() {
-		let index = this.dat.findIndex(value => value[this.opt["labelField"]].toLowerCase() == this.val);
-		if(index != -1) return this.dat[index][this.opt["dataField"]];
-		return null;
-	}
-	
-	/**
-	* @export
-	*/
-	get input() {
-		return this.inp;
-	}
-	
-	/**
-	* @export
-	*/
-	get box() {
-		return this.cpl;
+		let index = this._data.findIndex(value => value[this._options["label"]].toLowerCase() == this._value);
+		if(index != -1) return this._data[index][this._options["field"]];
+		return this._options["custom"] ? this._input.value : null;
 	}
 	
 	/**
 	* @export
 	*/
 	set data(value) {
-		if(this.opt["searchField"] == "") {
-			this.dat = value.map(val => ({"text": val}));
-			this.opt["labelField"] = this.opt["searchField"] = this.opt["dataField"] = "text";
-		}
-		else this.dat = value;
-		if(this.opt["searchField"] != this.opt["labelField"]) this.opt["highlight"] = false;
+		this._data = value;
+		if(this._options["search"] != this._options["label"]) this._options["highlight"] = false;
 	}
 	
 	/**
 	* @export
 	*/
-	get data() {
-		return this.dat;
+	setOptions(value) {
+		this._options = Object.assign(this._options, {"prompt": "", "open": false, "highlight": true, "custom": false, "maxHeight": "500px", "minChars": 3, "label": "text", "search": "text", "field": "text", "data": [], "onInput": function(text) {}, "onSelect": function(value, item, index) {}}, value);
 	}
 	
-	/**
-	* @export
-	*/
-	set options(value) {
-		Object.assign(this.opt, {"placeHolder": "", "open": false, "highlight": true, "maxHeight": 500, "minChars": 3, "labelField": "", "searchField": "", "dataField": "", "data": [], "onSelect": function() {}}, value);
-	}
 }
