@@ -9,13 +9,15 @@ Tiny autocomplete and label class
 
 # Features
 
- - no dependencies
  - autocomplete base : 3.37k JS / 1.7k GZIP / 1k CSS
  - autocomplete label : 5.63k JS / 2.5k GZIP / 1k CSS
  - filter array of Objects
  - full mouse / keyboard interaction
  - highlight search results
  - TODO : remote search
+
+# Demo
+https://nicopowa.github.io/autocomplete/
 
 # Options
 
