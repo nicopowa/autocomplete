@@ -43,31 +43,3 @@
 .ac-items span {
 	color: #FF9400;
 }
-
-
-
-
-.ac-labels {
-	position: absolute;
-	top: 0px;
-	height: 100%;
-	padding-left: 5px;
-	white-space: nowrap;
-}
-
-.ac-labels div::before {
-	content: '';
-	display: inline-block;
-	height: 100%;
-	vertical-align: middle;
-}
-
-.ac-labels div {
-	display: inline;
-	vertical-align: middle;
-	background-color: #AAAAAA;
-	margin-right: 5px;
-	padding: 3px;
-	border-radius: 4px;
-	cursor: pointer;
-}

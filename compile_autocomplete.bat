@@ -6,7 +6,7 @@ java -jar ../../_closure/compiler.jar ^
 --compilation_level ADVANCED_OPTIMIZATIONS ^
 --isolation_mode IIFE ^
 --warning_level VERBOSE ^
---language_in ES6_STRICT ^
+--language_in ES_NEXT ^
 --language_out ES5_STRICT ^
 --rewrite_polyfills=false ^
 --generate_exports ^

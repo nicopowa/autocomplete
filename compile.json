@@ -1,0 +1,49 @@
+{
+	"default": {
+		"output_file": "js/autocomplete.min.js",
+		"files": [
+			"js/autocomplete.js"
+		],
+		"output_style": "css/autocomplete.min.css",
+		"styles": [
+			"css/autocomplete.css"
+		],
+		"options": {
+			
+		},
+		"externs": [
+		
+		]
+	},
+	
+	"label": {
+		"output_file": "js/autocomplete.label.min.js",
+		"files": [
+			"js/autocomplete.js",
+			"js/autocomplete.label.js"
+		],
+		"output_style": "css/autocomplete.label.min.css",
+		"styles": [
+			"css/autocomplete.label.css"
+		],
+		"options": {
+			
+		},
+		"externs": [
+		
+		]
+	},
+	
+	"debug": {
+		"output_file": "js/autocomplete.min.js",
+		"files": [
+			"js/autocomplete.js"
+		],
+		"options": {
+			"define": "DEBUG=true"
+		},
+		"externs": [
+		
+		]
+	}
+}
