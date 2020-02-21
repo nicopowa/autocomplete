@@ -8,9 +8,9 @@
 		"styles": [
 			"css/autocomplete.css"
 		],
-		"options": {
-			
-		},
+		"options": [
+			{"define": "DEBUG=false"}
+		],
 		"externs": [
 		
 		]
@@ -26,9 +26,9 @@
 		"styles": [
 			"css/autocomplete.label.css"
 		],
-		"options": {
-			
-		},
+		"options": [
+			{"define": "DEBUG=false"}
+		],
 		"externs": [
 		
 		]
@@ -39,9 +39,9 @@
 		"files": [
 			"js/autocomplete.js"
 		],
-		"options": {
-			"define": "DEBUG=true"
-		},
+		"options": [
+			{"define": "DEBUG=true"}
+		],
 		"externs": [
 		
 		]

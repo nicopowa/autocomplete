@@ -1,20 +1,19 @@
 /**
-* simple autocomplete
-* https://nicopr.fr/autocomplete
-* based on https://www.w3schools.com/howto/howto_js_autocomplete.asp
-*/
-
-/**
-* @nocollapse
-* @export
-*/
+ * @export
+ * @nocollapse
+ * @class AutoComplete : simple autocomplete / based on https://www.w3schools.com/howto/howto_js_autocomplete.asp
+ * @url https://nicopr.fr/autocomplete
+ */
 class AutoComplete {
 	
+	/**
+	 * @construct
+	 * @param {Element} el : 
+	 * @param {*} options : 
+	 */
 	constructor(el, options) {
 		this._options = {};
 		this.setOptions(options);
-		this._data = [];
-		this.data = this._options["data"];
 		this._element = el;
 		this._value = "";
 		this._current = -1;
@@ -24,11 +23,11 @@ class AutoComplete {
 		
 		this._input = document.createElement("input");
 		this._input.setAttribute("type", "search");
-		this._input.setAttribute("placeHolder", this._options["prompt"]);
+		this._input.setAttribute("placeholder", this._options.placeHolder);
 		this._element.appendChild(this._input);
 		
 		this._cpl = document.createElement("div");
-		this._cpl.style.maxHeight = this._options["maxHeight"];
+		this._cpl.style.maxHeight = this._options.boxMaxHeight;
 		this._cpl.classList.add("ac-items");
 		this._element.appendChild(this._cpl);
 		
@@ -41,22 +40,22 @@ class AutoComplete {
 	onInput(e) {
 		this._value = this._input.value.toLowerCase();
 		this.closeResults();
-		if(!this._options["open"] && (this._value.length < this._options["minChars"] || this._cpl.childElementCount)) return;
+		if(!this._options.allowOpen && (this._value.length < this._options.minChars || this._cpl.childElementCount)) return;
 		this.openResults(this.filter());
-		this._options["onInput"](this._value);
+		this._options.onInput(this._value);
 	}
 	
 	addResult(result) {
 		let b = document.createElement("div");
-		if(this._options["highlight"]) b.innerHTML = this.highlight(result[this._options["label"]]);
-		else b.innerHTML = result[this._options["label"]];
-		b.setAttribute("data-value", this._data.findIndex(value => value[this._options["label"]] == result[this._options["label"]]));
+		if(this._options.highlight) b.innerHTML = this.highlight(result[this._options.labelField]);
+		else b.innerHTML = result[this._options.labelField];
+		b.setAttribute("data-value", this._options.allData.findIndex(value => value[this._options.labelField] == result[this._options.labelField]));
 		b.addEventListener("click", this.select.bind(this));
 		this._cpl.appendChild(b);
 	}
 	
 	filter() {
-		return this._data.filter(value => value[this._options["search"]].toLowerCase().indexOf(this._value) != -1);
+		return this._options.allData.filter(value => value[this._options.searchField].toLowerCase().indexOf(this._value) != -1);
 	}
 	
 	highlight(label) {
@@ -68,17 +67,17 @@ class AutoComplete {
 	
 	select(e) {
 		let index = e.target.getAttribute("data-value");
-		let selected = this._data[index];
-		this._input.value = selected[this._options["label"]];
+		let selected = this._options.allData[index];
+		this._input.value = selected[this._options.labelField];
 		this._value = this._input.value.toLowerCase();
 		this._down = false;
 		this.closeResults();
-		this._options["onSelect"](selected[this._options["field"]], selected, index);
+		this._options.onSelect(selected[this._options.displayField], selected, index);
 	}
 	
 	onClick(e) {
 		if(this._cpl.childElementCount) return this.closeResults();
-		if(this._options["open"] && !this._value) this.openResults(this._data);
+		if(this._options.allowOpen && !this._value) this.openResults(this._options.allData);
 		else this.onInput(null);
 	}
 	
@@ -100,8 +99,8 @@ class AutoComplete {
 			case 13: // enter
 				if(this._current != -1) x[this._current].click();
 				else {
-					if(this._options["custom"]) {
-						if(this._input.value.length >= this._options["minChars"]) this._options["onSelect"](this._input.value, undefined, -1);
+					if(this._options.custom) {
+						if(this._input.value.length >= this._options.minChars) this._options.onSelect(this._input.value, undefined, -1);
 					}
 					else if(this._cpl.childElementCount == 1) x[0].click();
 					this.closeResults();
@@ -145,35 +144,66 @@ class AutoComplete {
 	}
 	
 	/**
-	* @export
-	*/
+	 * @export
+	 */
 	set value(value) {
 		this._input.value = value;
 		this._value = value.toLowerCase();
 	}
 	
 	/**
-	* @export
-	*/
+	 * @export
+	 * @type {*} value : 
+	 */
 	get value() {
-		let index = this._data.findIndex(value => value[this._options["label"]].toLowerCase() == this._value);
-		if(index != -1) return this._data[index][this._options["field"]];
-		return this._options["custom"] ? this._input.value : null;
+		let index = this._options.allData.findIndex(value => value[this._options.labelField].toLowerCase() == this._value);
+		if(index != -1) return this._options.allData[index][this._options.displayField];
+		return this._options.custom ? this._input.value : null;
 	}
 	
 	/**
-	* @export
-	*/
+	 * @export
+	 */
 	set data(value) {
-		this._data = value;
-		if(this._options["search"] != this._options["label"]) this._options["highlight"] = false;
+		this._options.allData = value;
+		if(this._options.searchField != this._options.labelField) this._options.highlight = false;
+	}
+
+	/**
+	 * @export
+	 * @type {Element} input : 
+	 */
+	get input() {
+		return this._input;
+	}
+
+	/**
+	 * @export
+	 * @type {Element} cpl : 
+	 */
+	get cpl() {
+		return this._cpl;
 	}
 	
 	/**
-	* @export
-	*/
+	 * @export
+	 * @method setOptions : 
+	 */
 	setOptions(value) {
-		this._options = Object.assign(this._options, {"prompt": "", "open": false, "highlight": true, "custom": false, "maxHeight": "500px", "minChars": 3, "label": "text", "search": "text", "field": "text", "data": [], "onInput": function(text) {}, "onSelect": function(value, item, index) {}}, value);
+		this._options = {
+			placeHolder: value["prompt"] || "", 
+			allowOpen: value["open"] || false, 
+			highlight: value["highlight"] || true, 
+			custom: value["custom"] || false, 
+			boxMaxHeight: value["maxHeight"] || "500px", 
+			minChars: value["minChars"] || 3, 
+			labelField: value["label"] || "text", 
+			searchField: value["search"] || "text", 
+			displayField: value["field"] || "text", 
+			allData: value["data"] || [], 
+			onInput: value["onInput"] || (text => {}), 
+			onSelect: value["onSelect"] || ((value, item, index) => {})
+		};
 	}
 	
 }
