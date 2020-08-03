@@ -5,12 +5,17 @@
 .ac input {
 	width: 100%;
 	box-sizing: border-box;
-	background-color: #f1f1f1;
+	/*background-color: #f1f1f1;*/
 	/*border: 0px solid transparent;*/
-	padding: 10px;
-	font-size: 16px;
+	height: 2.75em;
 	outline: none;
+	border: none;
 	-webkit-appearance: none;
+}
+
+.ac input[data-readonly] {
+	caret-color: transparent;
+	cursor: default;
 }
 
 .ac-items {
@@ -25,7 +30,9 @@
 }
 
 .ac-items div {
-	padding: 10px;
+	/*padding: 10px;*/
+	padding-left: 0.5em;
+	line-height: 2em;
 	cursor: pointer;
 	border-bottom: 1px solid #d4d4d4;
 	font-family: helvetica;
@@ -42,4 +49,5 @@
 
 .ac-items span {
 	color: #FF9400;
+	pointer-events: none;
 }

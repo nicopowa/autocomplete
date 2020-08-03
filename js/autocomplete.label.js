@@ -1,18 +1,18 @@
 /**
-* simple autocomplete with multi select
-* https://nicopr.fr/autocomplete
-*/
+ * simple autocomplete with multi select
+ * https://nicopr.fr/autocomplete
+ */
 
 /**
-* @nocollapse
-* @export
-* @extends {AutoComplete}
-*/
+ * @nocollapse
+ * @export
+ * @extends {AutoComplete}
+ */
 class AutoCompleteLabel extends AutoComplete {
 	
 	constructor(el, options) {
 		super(el, options);
-		
+
 		this.labels = [];
 		this.labelEls = [];
 		
@@ -21,7 +21,7 @@ class AutoCompleteLabel extends AutoComplete {
 		this._element.appendChild(this.labelsContainer);
 	}
 	
-	addLabel(label) {
+	addLabel(label, dispatch = true) {
 		//console.log("add", label);
 		let newlabel = document.createElement("div");
 		newlabel.innerHTML = label[this._options.labelField];
@@ -33,15 +33,17 @@ class AutoCompleteLabel extends AutoComplete {
 			this.focus(); // focus textfield after remove ?
 		});
 		this.update();
-		this._options.onLabel(label, this.labels, true);
+		if(dispatch) this._options.onLabel(label, this.labels, true);
 		this.focus(); // focus textfield after add ?
 	}
 	
-	removeLabel(label) {
+	removeLabel(label, dispatch = true) {
+		//console.log("remove", label);
 		let index = this.findIndex(label[this._options.labelField]);
 		this.labelsContainer.removeChild(this.labelEls.splice(index, 1)[0]);
+		let removed = this.labels.splice(index, 1)[0];
 		this.update();
-		this._options.onLabel(this.labels.splice(index, 1)[0], this.labels, false);
+		if(dispatch) this._options.onLabel(removed, this.labels, false);
 	}
 	
 	update() {
@@ -49,12 +51,12 @@ class AutoCompleteLabel extends AutoComplete {
 	}
 	
 	focus() {
-		this._input.focus()
+		this._input.focus();
 	}
 	
 	/**
-	* @override
-	*/
+	 * @override
+	 */
 	select(e) {
 		super.select(e);
 		let index = e.target.getAttribute("data-value");
@@ -81,34 +83,42 @@ class AutoCompleteLabel extends AutoComplete {
 	}
 
 	findIndex(label) {
-		return this.labels.findIndex(val => val[this._options.labelField].toLowerCase() == label.toLowerCase());
+		let index = this.labels.findIndex(val => val[this._options.labelField].toLowerCase() == label.toLowerCase());
+		//console.log("found", index);
+		return index;
 	}
 	
 	/**
-	* @export
-	*/
+	 * @export
+	 * @getter
+	 * @type {Array} value : 
+	 */
 	get value() {
 		return this.labels;
 	}
 	
 	/**
-	* @export
-	*/
+	 * @export
+	 * @setter
+	 */
 	set value(value) {
-		while(this.labels.length) this.removeLabel(this.labels[0]);
+		while(this.labels.length) this.removeLabel(this.labels[0], false);
+		//this.labels.forEach(label => this.removeLabel(label, false));
 		if(typeof value[0] === "string") value = value.map(val => ({[this._options.labelField]: val}));
-		value.forEach(label => {
-			if(this.findIndex(label[this._options.labelField]) == -1) this.addLabel(label);
-		});
+		value.filter(label => this.findIndex(label[this._options.labelField]) == -1).forEach(label => this.addLabel(label, false));
 	}
 	
 	/**
-	* @export
-	* @override
-	*/
+	 * @export
+	 * @override
+	 */
 	setOptions(value) {
-		super.setOptions(value);
-		this._options.onLabel = (label, labels, added) => {};
+		return {
+			...super.setOptions(value), 
+			...{ 
+				onLabel: value["onLabel"] || ((label, labels, added) => {})
+			}
+		};
 	}
 	
 }

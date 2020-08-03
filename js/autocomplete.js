@@ -8,12 +8,12 @@ class AutoComplete {
 	
 	/**
 	 * @construct
-	 * @param {Element} el : 
-	 * @param {*} options : 
+	 * @param {Element} el : autocomplete container
+	 * @param {Object} options : 
 	 */
 	constructor(el, options) {
-		this._options = {};
-		this.setOptions(options);
+		this._options = this.setOptions(options);
+		
 		this._element = el;
 		this._value = "";
 		this._current = -1;
@@ -23,8 +23,12 @@ class AutoComplete {
 		
 		this._input = document.createElement("input");
 		this._input.setAttribute("type", "search");
+		if(this._options.required) this._input.setAttribute("required", "");
+		if(!this._options.filter) this._input.setAttribute("data-readonly", "");
 		this._input.setAttribute("placeholder", this._options.placeHolder);
 		this._element.appendChild(this._input);
+
+		if(this._options.value) this.value = this._options.value;
 		
 		this._cpl = document.createElement("div");
 		this._cpl.style.maxHeight = this._options.boxMaxHeight;
@@ -37,7 +41,11 @@ class AutoComplete {
 		this._cpl.addEventListener("mousedown", this.onMouseDown.bind(this));
 	}
 	
-	onInput(e) {
+	/**
+	 * @method onInput : textfield input
+	 * @param {Event} event : 
+	 */
+	onInput(event) {
 		this._value = this._input.value.toLowerCase();
 		this.closeResults();
 		if(!this._options.allowOpen && (this._value.length < this._options.minChars || this._cpl.childElementCount)) return;
@@ -45,6 +53,11 @@ class AutoComplete {
 		this._options.onInput(this._value);
 	}
 	
+	/**
+	 * @private
+	 * @method addResult : 
+	 * @param {Object} result : 
+	 */
 	addResult(result) {
 		let b = document.createElement("div");
 		if(this._options.highlight) b.innerHTML = this.highlight(result[this._options.labelField]);
@@ -54,20 +67,33 @@ class AutoComplete {
 		this._cpl.appendChild(b);
 	}
 	
+	/**
+	 * @private
+	 * @method filter : 
+	 */
 	filter() {
-		return this._options.allData.filter(value => value[this._options.searchField].toLowerCase().indexOf(this._value) != -1);
+		return this._options.allData.filter(value => value[this._options.searchField].toLowerCase().indexOf(this._value) != -1 || !this._options.filter);
 	}
 	
+	/**
+	 * @private
+	 * @method highlight : 
+	 */
 	highlight(label) {
-		let found = label.toLowerCase().indexOf(this._value);
-		let high = document.createElement("span");
+		let found = label.toLowerCase().indexOf(this._value), 
+		high = document.createElement("span");
 		high.innerHTML = label.slice(found, found + this._value.length);
 		return label.slice(0, found) + high.outerHTML + label.slice(found + this._value.length, label.length);
 	}
 	
-	select(e) {
-		let index = e.target.getAttribute("data-value");
-		let selected = this._options.allData[index];
+	/**
+	 * @private
+	 * @method select : 
+	 * @param {Event} event : 
+	 */
+	select(event) {
+		let index = event.target.getAttribute("data-value"), // SPAN HIGHLIGHT ERROR ??
+			selected = this._options.allData[index];
 		this._input.value = selected[this._options.labelField];
 		this._value = this._input.value.toLowerCase();
 		this._down = false;
@@ -75,16 +101,24 @@ class AutoComplete {
 		this._options.onSelect(selected[this._options.displayField], selected, index);
 	}
 	
-	onClick(e) {
+	/**
+	 * @method onClick : 
+	 * @param {Event} event : 
+	 */
+	onClick(event) {
 		if(this._cpl.childElementCount) return this.closeResults();
 		if(this._options.allowOpen && !this._value) this.openResults(this._options.allData);
 		else this.onInput(null);
 	}
 	
-	onKeyDown(e) {
+	/**
+	 * @method onKeyDown : 
+	 * @param {Event} event : 
+	 */
+	onKeyDown(event) {
 		let x = this._cpl.childNodes;
-		if([40, 38, 13, 27].indexOf(e.keyCode) != -1) e.preventDefault();
-		switch(e.keyCode) {
+		if([40, 38, 13, 27].indexOf(event.keyCode) != -1 || !this._options.filter) event.preventDefault();
+		switch(event.keyCode) {
 			case 40: // down
 				if(this._current == -1) this.onInput(null);
 				this._current++;
@@ -113,15 +147,27 @@ class AutoComplete {
 		}
 	}
 	
-	onBlur(e) {
+	/**
+	 * @method onBlur : 
+	 * @param {Event} event : 
+	 */
+	onBlur(event) {
 		if(this._down) return;
 		this.closeResults();
 	}
 	
-	onMouseDown(e) {
+	/**
+	 * @method onMouseDown : 
+	 * @param {Event} event : 
+	 */
+	onMouseDown(event) {
 		this._down = true;
 	}
 	
+	/**
+	 * @method activeResult : 
+	 * @param {*} x : 
+	 */
 	activeResult(x) {
 		if(!x.length) return;
 		this.inactiveResult(x);
@@ -130,14 +176,25 @@ class AutoComplete {
 		x[this._current].scrollIntoView();
 	}
 	
+	/**
+	 * @method inactiveResult : 
+	 * @param {*} x : 
+	 */
 	inactiveResult(x) {
 		for(let i = 0, l = x.length; i < l; i++) x[i].classList.remove("ac-active");
 	}
 	
+	/**
+	 * @method openResults : 
+	 * @param {Array<Object>} dat : 
+	 */
 	openResults(dat) {
 		dat.map(this.addResult, this);
 	}
 	
+	/**
+	 * @method closeResults : 
+	 */
 	closeResults() {
 		this._current = -1;
 		while(this._cpl.firstChild) this._cpl.removeChild(this._cpl.firstChild);
@@ -153,7 +210,7 @@ class AutoComplete {
 	
 	/**
 	 * @export
-	 * @type {*} value : 
+	 * @type {String} value : 
 	 */
 	get value() {
 		let index = this._options.allData.findIndex(value => value[this._options.labelField].toLowerCase() == this._value);
@@ -190,10 +247,13 @@ class AutoComplete {
 	 * @method setOptions : 
 	 */
 	setOptions(value) {
-		this._options = {
+		return {
+			value: value["value"] || "", 
+			filter: value["filter"] !== false, 
+			required: value["required"] || false, 
 			placeHolder: value["prompt"] || "", 
 			allowOpen: value["open"] || false, 
-			highlight: value["highlight"] || true, 
+			highlight: value["highlight"] !== false && value["filter"], 
 			custom: value["custom"] || false, 
 			boxMaxHeight: value["maxHeight"] || "500px", 
 			minChars: value["minChars"] || 3, 

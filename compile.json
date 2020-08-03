@@ -35,7 +35,7 @@
 	},
 	
 	"debug": {
-		"output_file": "js/autocomplete.min.js",
+		"output_file": "js/autocomplete.debug.min.js",
 		"files": [
 			"js/autocomplete.js"
 		],
