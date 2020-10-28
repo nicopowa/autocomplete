@@ -110,12 +110,12 @@ const main = () => {
 	.map(val => ({"text": val}));
 
 	let customLabel = new AutoCompleteLabel(customLabelAC, {
-		prompt: "Custom labels ?",
-		open: true,
-		highlight: true,
+		prompt: "Custom labels ?", 
+		open: true, 
+		highlight: true, 
 		custom: true, 
-		data: custom_label_data,
-		minChars: 3,
+		data: custom_label_data, 
+		minChars: 3, 
 		onLabel: (label, labels, added) => {
 			console.log("custom label", label, "/", labels, added);
 		}

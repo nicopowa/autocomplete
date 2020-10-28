@@ -87,7 +87,6 @@ class AutoComplete {
 	}
 	
 	/**
-	 * @private
 	 * @method select : 
 	 * @param {Event} event : 
 	 */
@@ -201,15 +200,20 @@ class AutoComplete {
 	}
 	
 	/**
-	 * @export
+	 * @setter
 	 */
 	set value(value) {
+		if(!this._options.custom) {
+			let index = this._options.allData.findIndex(val => val[this._options.displayField] === value);
+			if(index != -1) value = this._options.allData[index][this._options.labelField];			
+		}
 		this._input.value = value;
 		this._value = value.toLowerCase();
 	}
 	
 	/**
 	 * @export
+	 * @getter
 	 * @type {String} value : 
 	 */
 	get value() {
@@ -219,7 +223,7 @@ class AutoComplete {
 	}
 	
 	/**
-	 * @export
+	 * @setter
 	 */
 	set data(value) {
 		this._options.allData = value;
@@ -228,6 +232,7 @@ class AutoComplete {
 
 	/**
 	 * @export
+	 * @getter
 	 * @type {Element} input : 
 	 */
 	get input() {
@@ -236,6 +241,7 @@ class AutoComplete {
 
 	/**
 	 * @export
+	 * @getter
 	 * @type {Element} cpl : 
 	 */
 	get cpl() {
@@ -263,6 +269,132 @@ class AutoComplete {
 			allData: value["data"] || [], 
 			onInput: value["onInput"] || (text => {}), 
 			onSelect: value["onSelect"] || ((value, item, index) => {})
+		};
+	}
+	
+}
+
+/**
+ * simple autocomplete with multi select
+ * https://nicopr.fr/autocomplete
+ */
+
+/**
+ * @nocollapse
+ * @export
+ * @extends {AutoComplete}
+ */
+class AutoCompleteLabel extends AutoComplete {
+	
+	/**
+	 * @construct
+	 * @param {Element} el : autocomplete container
+	 * @param {Object} options : 
+	 */
+	constructor(el, options) {
+		super(el, options);
+
+		this._element.classList.add("ac-label");
+
+		this.labels = [];
+		this.labelEls = [];
+		
+		this.labelsContainer = document.createElement("div");
+		this.labelsContainer.classList.add("ac-labels");
+		this._element.insertBefore(this.labelsContainer, this._input);
+	}
+	
+	addLabel(label, dispatch = true) {
+		//console.log("add", label);
+		let newlabel = document.createElement("div");
+		newlabel.innerHTML = label[this._options.labelField];
+		this.labelsContainer.appendChild(newlabel);
+		this.labels.push(label);
+		this.labelEls.push(newlabel);
+		newlabel.addEventListener("click", event => {
+			this.removeLabel(label);
+			this.focus(); // focus textfield after remove ?
+		});
+		if(dispatch) this._options.onLabel(label, this.labels, true);
+		this.focus(); // focus textfield after add ?
+	}
+	
+	removeLabel(label, dispatch = true) {
+		//console.log("remove", label);
+		let index = this.findIndex(label[this._options.labelField]);
+		this.labelsContainer.removeChild(this.labelEls.splice(index, 1)[0]);
+		let removed = this.labels.splice(index, 1)[0];
+		if(dispatch) this._options.onLabel(removed, this.labels, false);
+	}
+	
+	focus() {
+		this._input.focus();
+	}
+	
+	/**
+	 * @override
+	 */
+	select(e) {
+		super.select(e);
+		let index = e.target.getAttribute("data-value");
+		let selected = this._options.allData[index];
+		index = this.findIndex(selected[this._options.labelField]);
+		if(index == -1) this.addLabel(selected);
+		this._input.value = this._value = "";
+	}
+	
+	onKeyDown(e) {
+		super.onKeyDown(e);
+		if(e.keyCode == 8 && !this._value.length && this.labels.length) { // backspace remove last label if textfield empty
+			e.preventDefault();
+			this._value = this._input.value = this.labels.slice(-1)[0][this._options.labelField]; // refill input
+			this.removeLabel(this.labels.slice(-1)[0]);
+		}
+		if(e.keyCode == 13 && this._options.custom && this._value.length >= this._options.minChars) {
+			let index = this.findIndex(this._value);
+			if(index == -1) {
+				this.addLabel({[this._options.labelField]: this._value}); // allow custom labels on press enter
+				this._input.value = this._value = "";
+			}
+		}
+	}
+
+	findIndex(label) {
+		let index = this.labels.findIndex(val => val[this._options.labelField].toLowerCase() == label.toLowerCase());
+		//console.log("found", index);
+		return index;
+	}
+	
+	/**
+	 * @export
+	 * @getter
+	 * @type {Array} value : 
+	 */
+	get value() {
+		return this.labels;
+	}
+	
+	/**
+	 * @setter
+	 */
+	set value(value) {
+		while(this.labels.length) this.removeLabel(this.labels[0], false);
+		//this.labels.forEach(label => this.removeLabel(label, false));
+		if(typeof value[0] === "string") value = value.map(val => ({[this._options.labelField]: val}));
+		value.filter(label => this.findIndex(label[this._options.labelField]) == -1).forEach(label => this.addLabel(label, false));
+	}
+	
+	/**
+	 * @export
+	 * @override
+	 * @method setOptions : 
+	 */
+	setOptions(value) {
+		return {
+			...super.setOptions(value), 
+			...{ 
+				onLabel: value["onLabel"] || ((label, labels, added) => {})
+			}
 		};
 	}
 	

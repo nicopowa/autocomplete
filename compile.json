@@ -16,28 +16,11 @@
 		]
 	},
 	
-	"label": {
-		"output_file": "js/autocomplete.label.min.js",
-		"files": [
-			"js/autocomplete.js",
-			"js/autocomplete.label.js"
-		],
-		"output_style": "css/autocomplete.label.min.css",
-		"styles": [
-			"css/autocomplete.label.css"
-		],
-		"options": [
-			{"define": "DEBUG=false"}
-		],
-		"externs": [
-		
-		]
-	},
-	
 	"debug": {
 		"output_file": "js/autocomplete.debug.min.js",
 		"files": [
-			"js/autocomplete.js"
+			"js/autocomplete.js",
+			"js/autocomplete.label.js"
 		],
 		"options": [
 			{"define": "DEBUG=true"}
