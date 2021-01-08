@@ -45,7 +45,7 @@ const main = () => {
 
 	let countries = new AutoComplete(countriesAC, {
 		prompt: "Countries",
-		open: false,
+		open: true,
 		highlight: true,
 		data: countries_data,
 		minChars: 3,

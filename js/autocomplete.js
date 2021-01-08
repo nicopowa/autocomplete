@@ -1,7 +1,6 @@
 /**
  * @export
- * @nocollapse
- * @class AutoComplete : simple autocomplete / based on https://www.w3schools.com/howto/howto_js_autocomplete.asp
+ * @class AutoComplete : simple autocomplete, based on https://www.w3schools.com/howto/howto_js_autocomplete.asp
  * @url https://nicopr.fr/autocomplete
  */
 class AutoComplete {
@@ -12,10 +11,13 @@ class AutoComplete {
 	 * @param {Object} options : 
 	 */
 	constructor(el, options) {
+
 		this._options = this.setOptions(options);
+		this._options.allData = this._options.allData.map((entry, index) => ({...entry, _index: index}));
 		
 		this._element = el;
 		this._value = "";
+		this._index = -1; // useless ?
 		this._current = -1;
 		this._down = false;
 		
@@ -31,7 +33,7 @@ class AutoComplete {
 		if(this._options.value) this.value = this._options.value;
 		
 		this._cpl = document.createElement("div");
-		this._cpl.style.maxHeight = this._options.boxMaxHeight;
+		this._cpl.style.maxHeight = "220px";
 		this._cpl.classList.add("ac-items");
 		this._element.appendChild(this._cpl);
 		
@@ -58,11 +60,14 @@ class AutoComplete {
 	 * @method addResult : 
 	 * @param {Object} result : 
 	 */
-	addResult(result) {
+	addResult(result, index) {
 		let b = document.createElement("div");
+
 		if(this._options.highlight) b.innerHTML = this.highlight(result[this._options.labelField]);
 		else b.innerHTML = result[this._options.labelField];
-		b.setAttribute("data-value", this._options.allData.findIndex(value => value[this._options.labelField] == result[this._options.labelField]));
+
+		//index = this._options.allData.findIndex(value => value[this._options.labelField] == result[this._options.labelField]);
+		b.setAttribute("data-value", result._index);
 		b.addEventListener("click", this.select.bind(this));
 		this._cpl.appendChild(b);
 	}
@@ -91,10 +96,14 @@ class AutoComplete {
 	 * @param {Event} event : 
 	 */
 	select(event) {
+
 		let index = event.target.getAttribute("data-value"), // SPAN HIGHLIGHT ERROR ??
 			selected = this._options.allData[index];
+
 		this._input.value = selected[this._options.labelField];
 		this._value = this._input.value.toLowerCase();
+		this._index = index;
+
 		this._down = false;
 		this.closeResults();
 		this._options.onSelect(selected[this._options.displayField], selected, index);
@@ -112,7 +121,7 @@ class AutoComplete {
 	
 	/**
 	 * @method onKeyDown : 
-	 * @param {Event} event : 
+	 * @param {KeyboardEvent} event : 
 	 */
 	onKeyDown(event) {
 		let x = this._cpl.childNodes;
@@ -204,8 +213,8 @@ class AutoComplete {
 	 */
 	set value(value) {
 		if(!this._options.custom) {
-			let index = this._options.allData.findIndex(val => val[this._options.displayField] === value);
-			if(index != -1) value = this._options.allData[index][this._options.labelField];			
+			this._index = this._options.allData.findIndex(val => val[this._options.displayField] === value);
+			if(this._index != -1) value = this._options.allData[this._index][this._options.labelField];			
 		}
 		this._input.value = value;
 		this._value = value.toLowerCase();
@@ -217,8 +226,8 @@ class AutoComplete {
 	 * @type {String} value : 
 	 */
 	get value() {
-		let index = this._options.allData.findIndex(value => value[this._options.labelField].toLowerCase() == this._value);
-		if(index != -1) return this._options.allData[index][this._options.displayField];
+		//let index = this._options.allData.findIndex(value => value[this._options.labelField].toLowerCase() == this._value);
+		if(this._index != -1) return this._options.allData[this._index][this._options.displayField];
 		return this._options.custom ? this._input.value : null;
 	}
 	
@@ -226,7 +235,7 @@ class AutoComplete {
 	 * @setter
 	 */
 	set data(value) {
-		this._options.allData = value;
+		this._options.allData = value.map((entry, index) => ({...entry, _index: index}));
 		if(this._options.searchField != this._options.labelField) this._options.highlight = false;
 	}
 
@@ -253,6 +262,7 @@ class AutoComplete {
 	 * @method setOptions : 
 	 */
 	setOptions(value) {
+
 		return {
 			value: value["value"] || "", 
 			filter: value["filter"] !== false, 
@@ -270,18 +280,14 @@ class AutoComplete {
 			onInput: value["onInput"] || (text => {}), 
 			onSelect: value["onSelect"] || ((value, item, index) => {})
 		};
+
 	}
 	
 }
 
 /**
- * simple autocomplete with multi select
- * https://nicopr.fr/autocomplete
- */
-
-/**
- * @nocollapse
  * @export
+ * @class AutoCompleteLabel : simple autocomplete multi select labels
  * @extends {AutoComplete}
  */
 class AutoCompleteLabel extends AutoComplete {

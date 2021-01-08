@@ -19,8 +19,7 @@
 	"debug": {
 		"output_file": "js/autocomplete.debug.min.js",
 		"files": [
-			"js/autocomplete.js",
-			"js/autocomplete.label.js"
+			"js/autocomplete.js"
 		],
 		"options": [
 			{"define": "DEBUG=true"}

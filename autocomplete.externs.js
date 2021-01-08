@@ -1,5 +1,6 @@
 /**
  * @externs
+ * files : js/autocomplete.js
  */
 
 /**
